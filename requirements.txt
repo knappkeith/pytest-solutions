@@ -1,0 +1,5 @@
+pytest
+selenium
+requests
+jsonschema
+https://7oars.googlecode.com/files/stopwatch-0.3.1.tar.gz
