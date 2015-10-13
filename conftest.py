@@ -5,8 +5,10 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
-import libs.selenium_wrapper as selenium_wrapper
+import libs.formulas as formulas
 
+
+sys.path.append(os.path.abspath(os.path.curdir))
 
 @pytest.fixture(scope="session", autouse=True)
 def set_up_test_run(request):
@@ -33,11 +35,6 @@ def set_up_test_run(request):
         pass
     request.addfinalizer(tear_down_test_run)
 
-
-@pytest.fixture(scope="function")
-def WorkFlowAPI(request):
-    from libs.requests_wrapper import WorkFlowEndpoints
-    return WorkFlowEndpoints()
 
 @pytest.yield_fixture(scope="function")
 def browser(request):
