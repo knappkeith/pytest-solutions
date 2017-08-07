@@ -1,29 +1,43 @@
-from requests_wrapper import FormulaEndpoints
+from old_requests_wrapper import FormulaEndpoints
 import json
 
 
 class PassTimeFormulas(FormulaEndpoints):
     def __init__(self,
-                 formula_name="Dynamics CRM to QuickBooks SalesOrder",
-                 instance_name="ordersTest-Keith",
+                 formula_name=None,
+                 instance_name=None,
                  **kwargs):
         self.formula_name = formula_name
         self.instance_name = instance_name
         super(PassTimeFormulas, self).__init__(**kwargs)
 
     def start(self):
+        if self.formula_name is None:
+            return "No Formula name set."
         response = self.send_request('get', self.formula_path).json()
-        self.url_vars['formula_id'] = self.iterate_dict(
-            response,
-            [('name', self.formula_name)])[0]['id']
-        response = self.send_request(
-            'get',
-            self.formula_id_instances_path.format(**self.url_vars)).json()
-        self.url_vars['formula_instance_id'] = self.iterate_dict(
-            response,
-            [('name', self.instance_name)])[0]['id']
-        self.set_execution_id()
-        self.set_all_current()
+        if len(response) > 0:
+            try:
+                self.url_vars['formula_id'] = self.iterate_dict(
+                    response,
+                    [('name', self.formula_name)])[0]['id']
+            except:
+                return "Couldn't find formula with name %r." % self.formula_name
+            if self.instance_name is None:
+                return "No Formula Instance set."
+            try:
+                response = self.send_request(
+                    'get',
+                    self.formula_id_instances_path.format(**self.url_vars)).json()
+                self.url_vars['formula_instance_id'] = self.iterate_dict(
+                    response,
+                    [('name', self.instance_name)])[0]['id']
+            except:
+                return "Couldn't find formula instance with name %r." % self.instance_name
+            self.set_execution_id()
+            self.set_all_current()
+            return "Everything set and ready to go!"
+        else:
+            return "No Formulas for this user."
 
     def _find_trigger_index(self,
                             execution_json,
@@ -112,3 +126,45 @@ class PassTimeFormulas(FormulaEndpoints):
              ('key', 'createQuickbooksOrder.request.body'),
              'value',
              'RefNumber'])[0]
+
+
+class PasstimeSalesOrder(PassTimeFormulas):
+    def __init__(self, **kwargs):
+        super(PasstimeSalesOrder, self).__init__(
+            # formula_name="Dynamics CRM to QuickBooks SalesOrder",
+            # instance_name="ordersTest-Keith",
+            formula_name="Dynamics CRM to QuickBooks SalesOrder",
+            instance_name="CRM -> QB ",
+            **kwargs)
+        self.path_to_formula = "/Users/keith/dev/cloud-elements/workflows/passtime/salesorders/wholething2.json"
+        self.configuration = {
+            "name":"ordersTest-Keith",
+            "configuration": {
+                "quickbooks.instance.id": 5752,
+                "dynamics.submitted.statuscode": 3,
+                "dynamics.instance.id": 5751,
+                "dynamics.customerid": "a88b903c-f50a-e511-80fc-d89d672cdd98",
+                "sendgrid.instance.id": 5753,
+                "errormessage.to": "keithknapp@cloud-elements.com"
+            }
+        }
+        print self.start()
+
+
+class PasstimeInvoice(PassTimeFormulas):
+    def __init__(self, **kwargs):
+        super(PasstimeInvoice, self).__init__(
+            formula_name="QuickBooks Invoice to Dynamics CRM",
+            instance_name="invoiceTest-Keith",
+            **kwargs)
+        self.path_to_formula = "/Users/keith/dev/cloud-elements/workflows/passtime/invoices/qb-invoice-to crm-invoice.json"
+        self.configuration = {
+            "name":"invoiceTest-Keith",
+            "configuration": {
+                "quickbooks.instance.id": 5752,
+                "dynamics.instance.id": 5751,
+                "sendgrid.instance.id": 5753,
+                "errormessage.to": "keithknapp@cloud-elements.com"
+            }
+        }
+        print self.start()

@@ -4,9 +4,9 @@ import sys
 import time
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-
+# from elements.quickbooks_desktop import QuickBooksDesktop
 import libs.formulas as formulas
-
+from libs.requests_wrapper import CeElementRequests
 
 sys.path.append(os.path.abspath(os.path.curdir))
 
@@ -34,6 +34,30 @@ def set_up_test_run(request):
         #   used to tear down anything for the overall session in the future.
         pass
     request.addfinalizer(tear_down_test_run)
+
+
+@pytest.yield_fixture(scope="function")
+def quickbooks_desktop_element(request):
+    from libs.elements import QuickBooksDesktop
+    
+    if hasattr(request.module, 'ELEMENT_CONFIG'):
+        element_config = request.module.ELEMENT_CONFIG['quickbooks_desktop']
+    else:
+        element_config = {}
+    session = QuickBooksDesktop(**element_config)
+    yield session
+
+
+@pytest.yield_fixture(scope="function")
+def dynamics_crm_element(request):
+    from libs.elements import DynamicsCRM
+    
+    if hasattr(request.module, 'ELEMENT_CONFIG'):
+        element_config = request.module.ELEMENT_CONFIG['dynamics_crm']
+    else:
+        element_config = {}
+    session = DynamicsCRM(**element_config)
+    yield session
 
 
 @pytest.yield_fixture(scope="function")
